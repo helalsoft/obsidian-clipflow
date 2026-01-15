@@ -1,0 +1,4 @@
+repo: https://github.com/helalsoft/catbrain
+files:
+  - src: Notes/Obsidian Clipboard Manager.md
+    dest: docs/plan.md
