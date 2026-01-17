@@ -7,7 +7,7 @@
 	--clipboard-border: var(--background-modifier-border);
 	--clipboard-bg-hover: var(--background-modifier-hover);
 	--clipboard-success: #189847;
-	--clipboard-danger: #8c2222;
+	--clipboard-danger: #b92c2c;
 }
 
 /* ===== Quick Switcher Modal ===== */
@@ -196,10 +196,10 @@
 
 .clipboard-action-btn:hover {
 	background: var(--clipboard-accent);
-	color: var(--text-on-accent);
 }
 
 .clipboard-delete-btn:hover {
+	color: var(--text-on-accent);
 	background: var(--clipboard-danger);
 }
 
@@ -390,12 +390,12 @@
 .clipboard-full-action-btn:hover {
 	background: var(--clipboard-accent);
 	border-color: var(--clipboard-accent);
-	color: var(--text-on-accent);
 }
 
 .clipboard-full-action-btn.clipboard-delete-btn:hover {
 	background: var(--clipboard-danger);
 	border-color: var(--clipboard-danger);
+	color: var(--text-on-accent);
 }
 
 .clipboard-full-action-btn.clipboard-action-success {
@@ -429,4 +429,3 @@
 	border-radius: 6px;
 	cursor: pointer;
 }
-
