@@ -6,6 +6,12 @@ import { ClipboardFullHistoryView, FULL_HISTORY_VIEW_TYPE } from "./fullHistoryV
 import { ClipboardEntry, ClipboardManagerSettings, DEFAULT_SETTINGS } from "./types";
 import { ConfirmClearModal } from "./confirmModal";
 
+interface ClipboardManagerData {
+	settings: ClipboardManagerSettings;
+	history: ClipboardEntry[];
+	systemEntry: ClipboardEntry | null;
+}
+
 export default class ClipboardManagerPlugin extends Plugin {
 	settings: ClipboardManagerSettings = DEFAULT_SETTINGS;
 	clipboardHistory: ClipboardEntry[] = [];
@@ -24,11 +30,11 @@ export default class ClipboardManagerPlugin extends Plugin {
 		this.registerView(FULL_HISTORY_VIEW_TYPE, (leaf) => new ClipboardFullHistoryView(leaf, this));
 
 		// Add ribbon icon
-		this.addRibbonIcon("clipboard-list", "Clipboard History", () => {
+		this.addRibbonIcon("clipboard-list", "Clipboard history", () => {
 			if (this.settings.ribbonAction === "sidebar") {
-				this.activateSidebarView();
+				void this.activateSidebarView();
 			} else {
-				this.openFullHistoryView();
+				void this.openFullHistoryView();
 			}
 		});
 
@@ -53,7 +59,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 			id: "open-full-history",
 			name: "Open full history view",
 			callback: () => {
-				this.openFullHistoryView();
+				void this.openFullHistoryView();
 			},
 		});
 
@@ -87,7 +93,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 		// Handle instant copies within Obsidian
 		this.registerDomEvent(document, "copy", () => {
 			// Small delay to let the clipboard update
-			setTimeout(() => this.handleObsidianCopy(), 50);
+			setTimeout(() => void this.handleObsidianCopy(), 50);
 		});
 
 		// Monkey-patch navigator.clipboard.writeText for programmatic copies (Vim support)
@@ -95,7 +101,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 		navigator.clipboard.writeText = async (text: string) => {
 			if (this.originalWriteText) {
 				await this.originalWriteText(text);
-				this.handleObsidianCopy(text);
+				void this.handleObsidianCopy(text);
 			}
 		};
 
@@ -115,7 +121,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		const data = await this.loadData();
+		const data = (await this.loadData()) as ClipboardManagerData;
 		if (data) {
 			this.settings = { ...DEFAULT_SETTINGS, ...data.settings };
 			this.clipboardHistory = data.history || [];
@@ -133,7 +139,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 
 	startClipboardMonitor(): void {
 		this.clipboardMonitorInterval = window.setInterval(
-			() => this.checkClipboard(),
+			() => void this.checkClipboard(),
 			this.settings.pollingInterval
 		);
 		this.registerInterval(this.clipboardMonitorInterval);
@@ -183,7 +189,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 
 			// If current system clipboard matches the latest Obsidian entry, 
 			// it means it was an internal copy. We don't need a separate system entry.
-			if (this.clipboardHistory.length > 0 && this.clipboardHistory[0].content === currentContent) {
+			if (this.clipboardHistory.length > 0 && this.clipboardHistory[0]!.content === currentContent) {
 				this.lastClipboardContent = currentContent;
 				if (this.systemClipboardEntry) {
 					this.systemClipboardEntry = null;
@@ -230,7 +236,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 				}
 			} else {
 				// If duplicates ARE allowed, still skip if it's already exactly at the top
-				if (this.clipboardHistory.length > 0 && this.clipboardHistory[0].content === currentContent) {
+				if (this.clipboardHistory.length > 0 && this.clipboardHistory[0]!.content === currentContent) {
 					this.lastClipboardContent = currentContent;
 					return;
 				}
@@ -290,16 +296,18 @@ export default class ClipboardManagerPlugin extends Plugin {
 		} else {
 			this.clipboardHistory = this.clipboardHistory.filter((e) => e.id !== id);
 		}
-		this.saveSettings();
+		void this.saveSettings();
 		this.refreshViews();
 	}
 
 	clearHistory(): void {
-		new ConfirmClearModal(this.app, async () => {
-			this.clipboardHistory = [];
-			this.systemClipboardEntry = null;
-			await this.saveSettings();
-			this.refreshViews();
+		new ConfirmClearModal(this.app, () => {
+			void (async () => {
+				this.clipboardHistory = [];
+				this.systemClipboardEntry = null;
+				await this.saveSettings();
+				this.refreshViews();
+			})();
 		}).open();
 	}
 
@@ -324,7 +332,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 
 			// If it's a system entry, add it to the history
 			if (entry.source === 'system') {
-				this.handleObsidianCopy(entry.content);
+				void this.handleObsidianCopy(entry.content);
 			}
 			
 			// Focus the view after pasting
@@ -370,7 +378,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 		const leaves = workspace.getLeavesOfType(SIDEBAR_VIEW_TYPE);
 
 		if (leaves.length > 0) {
-			leaf = leaves[0];
+			leaf = leaves[0]!;
 		} else {
 			leaf = workspace.getRightLeaf(false);
 			if (leaf) {
@@ -379,16 +387,16 @@ export default class ClipboardManagerPlugin extends Plugin {
 		}
 
 		if (leaf) {
-			workspace.revealLeaf(leaf);
+			void workspace.revealLeaf(leaf);
 		}
 	}
 
 	toggleSidebarView(): void {
 		const leaves = this.app.workspace.getLeavesOfType(SIDEBAR_VIEW_TYPE);
 		if (leaves.length > 0) {
-			leaves[0].detach();
+			leaves[0]!.detach();
 		} else {
-			this.activateSidebarView();
+			void this.activateSidebarView();
 		}
 	}
 
@@ -398,7 +406,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 		// Check if already open
 		const existingLeaves = workspace.getLeavesOfType(FULL_HISTORY_VIEW_TYPE);
 		if (existingLeaves.length > 0) {
-			workspace.revealLeaf(existingLeaves[0]);
+			void workspace.revealLeaf(existingLeaves[0]!);
 			return;
 		}
 
@@ -406,7 +414,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 		const leaf = workspace.getLeaf("tab");
 		if (leaf) {
 			await leaf.setViewState({ type: FULL_HISTORY_VIEW_TYPE, active: true });
-			workspace.revealLeaf(leaf);
+			void workspace.revealLeaf(leaf);
 		}
 	}
 }

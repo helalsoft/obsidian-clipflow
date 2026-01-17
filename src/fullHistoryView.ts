@@ -17,7 +17,7 @@ export class ClipboardFullHistoryView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Full Clipboard History";
+		return "Full clipboard history";
 	}
 
 	getIcon(): string {
@@ -43,7 +43,7 @@ export class ClipboardFullHistoryView extends ItemView {
 		const header = innerContainer.createDiv({ cls: "clipboard-full-header" });
 		
 		const titleSection = header.createDiv({ cls: "clipboard-full-title-section" });
-		titleSection.createEl("h2", { text: "Clipboard History" });
+		titleSection.createEl("h2", { text: "Clipboard history" });
 		
 		const history = this.plugin.getCombinedHistory();
 
@@ -64,7 +64,7 @@ export class ClipboardFullHistoryView extends ItemView {
 
 			const clearBtn = controls.createEl("button", { 
 				cls: "clipboard-clear-all-btn",
-				text: "Clear History"
+				text: "Clear history"
 			});
 			clearBtn.addEventListener("click", () => {
 				this.plugin.clearHistory();
@@ -123,14 +123,16 @@ export class ClipboardFullHistoryView extends ItemView {
 				attr: { "aria-label": "Copy" }
 			});
 			setIcon(copyBtn, "copy");
-			copyBtn.addEventListener("click", async () => {
-				await navigator.clipboard.writeText(entry.content);
-				copyBtn.addClass("clipboard-action-success");
-				setIcon(copyBtn, "check");
-				setTimeout(() => {
-					copyBtn.removeClass("clipboard-action-success");
-					setIcon(copyBtn, "copy");
-				}, 1000);
+			copyBtn.addEventListener("click", () => {
+				void (async () => {
+					await navigator.clipboard.writeText(entry.content);
+					copyBtn.addClass("clipboard-action-success");
+					setIcon(copyBtn, "check");
+					setTimeout(() => {
+						copyBtn.removeClass("clipboard-action-success");
+						setIcon(copyBtn, "copy");
+					}, 1000);
+				})();
 			});
 
 			const deleteBtn = actions.createEl("button", { 

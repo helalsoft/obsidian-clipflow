@@ -12,7 +12,7 @@ export class ConfirmClearModal extends Modal {
 		const { contentEl } = this;
 		contentEl.addClass("clipboard-confirm-modal");
 
-		contentEl.createEl("h3", { text: "Clear Clipboard History" });
+		contentEl.createEl("h3", { text: "Clear clipboard history" });
 		contentEl.createEl("p", { 
 			text: "Are you sure you want to clear all clipboard history? This action cannot be undone." 
 		});
@@ -25,7 +25,7 @@ export class ConfirmClearModal extends Modal {
 		});
 
 		const confirmBtn = buttonContainer.createEl("button", { 
-			text: "Clear History",
+			text: "Clear history",
 			cls: "mod-warning"
 		});
 		confirmBtn.addEventListener("click", () => {

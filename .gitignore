@@ -7,9 +7,6 @@ data.json
 # Dependencies
 node_modules/
 
-# Bun
-bun.lock
-
 # IDE
 .idea/
 *.sublime-project

@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, setIcon } from "obsidian";
 import type ClipboardManagerPlugin from "./main";
+import { ClipboardEntry } from "./types";
 
 export const SIDEBAR_VIEW_TYPE = "clipboard-history-sidebar";
 
@@ -16,7 +17,7 @@ export class ClipboardSidebarView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Clipboard History";
+		return "Clipboard history";
 	}
 
 	getIcon(): string {
@@ -38,7 +39,7 @@ export class ClipboardSidebarView extends ItemView {
 
 		// Header
 		const header = container.createDiv({ cls: "clipboard-sidebar-header" });
-		header.createEl("h4", { text: "Clipboard History" });
+		header.createEl("h4", { text: "Clipboard history" });
 		
 		const history = this.plugin.getCombinedHistory();
 		
@@ -59,7 +60,7 @@ export class ClipboardSidebarView extends ItemView {
 
 			const clearBtn = searchContainer.createEl("button", { 
 				cls: "clipboard-sidebar-clear-btn",
-				attr: { "aria-label": "Clear History" }
+				attr: { "aria-label": "Clear history" }
 			});
 			setIcon(clearBtn, "trash-2");
 			clearBtn.addEventListener("click", () => {
@@ -82,7 +83,7 @@ export class ClipboardSidebarView extends ItemView {
 		}
 	}
 
-	private createEntryElement(container: HTMLElement, entry: any): HTMLElement {
+	private createEntryElement(container: HTMLElement, entry: ClipboardEntry): HTMLElement {
 		const entryEl = container.createDiv({ 
 			cls: `clipboard-entry ${entry.source === 'system' ? 'clipboard-entry-system' : 'clipboard-entry-obsidian'}`, 
 			attr: { "data-id": entry.id } 
@@ -105,11 +106,13 @@ export class ClipboardSidebarView extends ItemView {
 
 		const copyBtn = actions.createEl("button", { cls: "clipboard-action-btn", attr: { "aria-label": "Copy" } });
 		setIcon(copyBtn, "copy");
-		copyBtn.addEventListener("click", async (e) => {
+		copyBtn.addEventListener("click", (e) => {
 			e.stopPropagation();
-			await navigator.clipboard.writeText(entry.content);
-			copyBtn.addClass("clipboard-action-success");
-			setTimeout(() => copyBtn.removeClass("clipboard-action-success"), 500);
+			void (async () => {
+				await navigator.clipboard.writeText(entry.content);
+				copyBtn.addClass("clipboard-action-success");
+				setTimeout(() => copyBtn.removeClass("clipboard-action-success"), 500);
+			})();
 		});
 
 		const deleteBtn = actions.createEl("button", { cls: "clipboard-action-btn clipboard-delete-btn", attr: { "aria-label": "Delete" } });

@@ -13,7 +13,7 @@ export class ClipboardManagerSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h3", { text: "System Clipboard" });
+		new Setting(containerEl).setName("System clipboard").setHeading();
 
 		new Setting(containerEl)
 			.setName("Track system clipboard")
@@ -67,7 +67,7 @@ export class ClipboardManagerSettingTab extends PluginSettingTab {
 				);
 		}
 
-		containerEl.createEl("h3", { text: "History" });
+		new Setting(containerEl).setName("History").setHeading();
 
 		new Setting(containerEl)
 			.setName("History limit")
