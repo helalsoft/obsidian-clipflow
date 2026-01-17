@@ -25,11 +25,13 @@ export class ClipboardSidebarView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
+		await super.onOpen();
 		this.renderView();
 	}
 
 	async onClose(): Promise<void> {
 		this.contentEl.empty();
+		await super.onClose();
 	}
 
 	renderView(): void {
@@ -92,7 +94,7 @@ export class ClipboardSidebarView extends ItemView {
 		// Source Icon
 		const iconEl = entryEl.createDiv({ cls: "clipboard-entry-source-icon" });
 		setIcon(iconEl, entry.source === 'system' ? 'monitor' : 'edit-3');
-		iconEl.setAttribute("aria-label", entry.source === 'system' ? 'System Clipboard' : 'Obsidian Clipboard');
+		iconEl.setAttribute("aria-label", entry.source === 'system' ? 'System clipboard' : 'Obsidian clipboard');
 
 		// Content preview
 		const content = entryEl.createDiv({ cls: "clipboard-entry-content" });

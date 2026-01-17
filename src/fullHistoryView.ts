@@ -25,11 +25,13 @@ export class ClipboardFullHistoryView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
+		await super.onOpen();
 		this.renderView();
 	}
 
 	async onClose(): Promise<void> {
 		this.contentEl.empty();
+		await super.onClose();
 	}
 
 	renderView(): void {
@@ -109,7 +111,7 @@ export class ClipboardFullHistoryView extends ItemView {
 			
 			const sourceIcon = meta.createSpan({ cls: "clipboard-entry-source-badge" });
 			setIcon(sourceIcon, entry.source === 'system' ? 'monitor' : 'edit-3');
-			sourceIcon.setAttribute("title", entry.source === 'system' ? 'System Clipboard' : 'Obsidian Clipboard');
+			sourceIcon.setAttribute("title", entry.source === 'system' ? 'System clipboard' : 'Obsidian clipboard');
 
 			meta.createSpan({ cls: "clipboard-entry-number", text: `#${index + 1}` });
 			const date = new Date(entry.timestamp);

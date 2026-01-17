@@ -211,7 +211,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 			// Save and refresh
 			await this.saveSettings();
 			this.refreshViews();
-		} catch (error) {
+		} catch {
 			// Silent failure
 		}
 	}
@@ -262,7 +262,7 @@ export default class ClipboardManagerPlugin extends Plugin {
 
 			await this.saveSettings();
 			this.refreshViews();
-		} catch (error) {
+		} catch {
 			// Silent failure
 		}
 	}
