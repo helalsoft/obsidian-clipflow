@@ -203,11 +203,6 @@
 	background: var(--clipboard-danger);
 }
 
-.clipboard-action-success {
-	background: var(--clipboard-success) !important;
-	color: white !important;
-}
-
 /* ===== Full History View ===== */
 .clipboard-full-history {
 	padding: 0;
@@ -396,12 +391,6 @@
 	background: var(--clipboard-danger);
 	border-color: var(--clipboard-danger);
 	color: var(--text-on-accent);
-}
-
-.clipboard-full-action-btn.clipboard-action-success {
-	background: var(--clipboard-success) !important;
-	border-color: var(--clipboard-success) !important;
-	color: white !important;
 }
 
 /* ===== Confirm Modal ===== */

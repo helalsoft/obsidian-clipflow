@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, setIcon } from "obsidian";
+import { ItemView, WorkspaceLeaf, setIcon, Notice } from "obsidian";
 import type ClipboardManagerPlugin from "./main";
 import { ClipboardEntry } from "./types";
 
@@ -110,8 +110,7 @@ export class ClipboardSidebarView extends ItemView {
 			e.stopPropagation();
 			void (async () => {
 				await navigator.clipboard.writeText(entry.content);
-				copyBtn.addClass("clipboard-action-success");
-				setTimeout(() => copyBtn.removeClass("clipboard-action-success"), 500);
+				new Notice("Copied from clipboard history");
 			})();
 		});
 
@@ -120,6 +119,7 @@ export class ClipboardSidebarView extends ItemView {
 		deleteBtn.addEventListener("click", (e) => {
 			e.stopPropagation();
 			this.plugin.deleteEntry(entry.id);
+			new Notice("Deleted from clipboard history");
 		});
 
 		// Click to paste

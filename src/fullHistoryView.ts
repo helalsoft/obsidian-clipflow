@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, setIcon } from "obsidian";
+import { ItemView, WorkspaceLeaf, setIcon, Notice } from "obsidian";
 import type ClipboardManagerPlugin from "./main";
 
 export const FULL_HISTORY_VIEW_TYPE = "clipboard-full-history";
@@ -126,12 +126,7 @@ export class ClipboardFullHistoryView extends ItemView {
 			copyBtn.addEventListener("click", () => {
 				void (async () => {
 					await navigator.clipboard.writeText(entry.content);
-					copyBtn.addClass("clipboard-action-success");
-					setIcon(copyBtn, "check");
-					setTimeout(() => {
-						copyBtn.removeClass("clipboard-action-success");
-						setIcon(copyBtn, "copy");
-					}, 1000);
+					new Notice("Copied from clipboard history");
 				})();
 			});
 
@@ -142,6 +137,7 @@ export class ClipboardFullHistoryView extends ItemView {
 			setIcon(deleteBtn, "trash-2");
 			deleteBtn.addEventListener("click", () => {
 				this.plugin.deleteEntry(entry.id);
+				new Notice("Deleted from clipboard history");
 			});
 
 			// Content
