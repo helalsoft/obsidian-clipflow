@@ -36,6 +36,7 @@ If you want to build the plugin yourself:
 - **Quick paste from history**: Opens a modal to search and paste from your history.
 - **Toggle sidebar history view**: Opens or closes the clipboard history sidebar.
 - **Open full history view**: Opens the detailed history management tab.
+- **Edit clipboard**: Opens your clipboard history as a markdown file for easy editing. Entries are separated by `---`. When you close the file, changes sync back to history.
 - **Clear clipboard history**: Removes all regular history entries.
 
 ### Views

@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { Editor, MarkdownView, normalizePath, Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { ClipboardManagerSettingTab } from "./settings";
 import { ClipboardQuickSwitcher } from "./quickSwitcher";
 import { ClipboardSidebarView, SIDEBAR_VIEW_TYPE } from "./sidebarView";
@@ -21,6 +21,8 @@ export default class ClipboardManagerPlugin extends Plugin {
 	private lastActiveEditor: Editor | null = null;
 	private lastActiveView: MarkdownView | null = null;
 	private originalWriteText: ((text: string) => Promise<void>) | null = null;
+	private bufferFile: TFile | null = null;
+	private static readonly BUFFER_FILE_PATH = "clipflow-buffer.md";
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -68,6 +70,14 @@ export default class ClipboardManagerPlugin extends Plugin {
 			name: "Clear clipboard history",
 			callback: () => {
 				this.clearHistory();
+			},
+		});
+
+		this.addCommand({
+			id: "edit-clipboard",
+			name: "Edit clipboard",
+			callback: () => {
+				void this.openClipboardBuffer();
 			},
 		});
 
@@ -425,6 +435,137 @@ export default class ClipboardManagerPlugin extends Plugin {
 		if (leaf) {
 			await leaf.setViewState({ type: FULL_HISTORY_VIEW_TYPE, active: true });
 			void workspace.revealLeaf(leaf);
+		}
+	}
+
+	/**
+	 * Replace entire clipboard history with new entries.
+	 */
+	replaceHistory(entries: ClipboardEntry[]): void {
+		this.clipboardHistory = entries;
+		void this.saveSettings();
+		this.refreshViews();
+	}
+
+	private static readonly ENTRY_SEPARATOR = "---";
+
+	/**
+	 * Convert clipboard history to text format for editing.
+	 * Each entry is separated by a line containing only "---".
+	 * Multiline entries are preserved as-is.
+	 */
+	private historyToText(): string {
+		return this.clipboardHistory
+			.map(entry => entry.content)
+			.join(`\n${ClipboardManagerPlugin.ENTRY_SEPARATOR}\n`);
+	}
+
+	/**
+	 * Parse text back into clipboard entries.
+	 * Entries are separated by lines containing only "---".
+	 */
+	private textToHistory(text: string): ClipboardEntry[] {
+		const separator = ClipboardManagerPlugin.ENTRY_SEPARATOR;
+		const rawEntries = text.split(new RegExp(`^${separator}$`, "m"));
+		const entries: ClipboardEntry[] = [];
+		const now = Date.now();
+
+		for (let i = 0; i < rawEntries.length; i++) {
+			const content = rawEntries[i]?.trim();
+			if (!content) continue;
+
+			entries.push({
+				id: `${now}-${i}-${Math.random().toString(36).substring(2, 9)}`,
+				content,
+				timestamp: now - i,
+				source: "obsidian",
+			});
+		}
+		return entries;
+	}
+
+	/**
+	 * Open clipboard buffer as a native Obsidian markdown file.
+	 * Closing the file syncs changes back to history.
+	 */
+	async openClipboardBuffer(): Promise<void> {
+		const { vault, workspace } = this.app;
+
+		// If the buffer file is already open, just reveal it
+		if (this.bufferFile) {
+			const existingLeaf = workspace.getLeavesOfType("markdown").find(leaf => {
+				const view = leaf.view as MarkdownView;
+				return view?.file?.path === this.bufferFile?.path;
+			});
+			if (existingLeaf) {
+				workspace.setActiveLeaf(existingLeaf, { focus: true });
+				return;
+			}
+		}
+
+		// Create/update buffer file content
+		const content = this.historyToText();
+		const filePath = normalizePath(ClipboardManagerPlugin.BUFFER_FILE_PATH);
+
+		// Get existing file if it exists
+		let file = vault.getFileByPath(filePath);
+
+		if (file) {
+			// File exists - modify it
+			await vault.modify(file, content);
+			this.bufferFile = file;
+		} else {
+			// Clean up any orphan file on disk not in vault cache
+			if (await vault.adapter.exists(filePath)) {
+				await vault.adapter.remove(filePath);
+			}
+			// Create new file
+			this.bufferFile = await vault.create(filePath, content);
+		}
+
+		// Open in a new tab
+		const leaf = workspace.getLeaf("tab");
+		await leaf.openFile(this.bufferFile);
+
+		// Defer close handler to skip initial layout-change events
+		setTimeout(() => {
+			const closeHandler = this.app.workspace.on("layout-change", () => {
+				if (!this.bufferFile) return;
+
+				// Check if the buffer file is still open
+				const stillOpen = workspace.getLeavesOfType("markdown").some(l => {
+					const view = l.view as MarkdownView;
+					return view?.file?.path === this.bufferFile?.path;
+				});
+
+				if (!stillOpen) {
+					void this.syncAndCleanupBuffer();
+					this.app.workspace.offref(closeHandler);
+				}
+			});
+
+			this.registerEvent(closeHandler);
+		}, 500);
+	}
+
+	/**
+	 * Sync buffer file content back to history and delete the buffer file.
+	 */
+	private async syncAndCleanupBuffer(): Promise<void> {
+		if (!this.bufferFile) return;
+
+		try {
+			const content = await this.app.vault.read(this.bufferFile);
+			const entries = this.textToHistory(content);
+			this.replaceHistory(entries);
+
+			// Delete the buffer file
+			await this.app.vault.delete(this.bufferFile);
+			new Notice("Clipboard history updated");
+		} catch (error) {
+			console.error("ClipFlow: Failed to sync buffer file", error);
+		} finally {
+			this.bufferFile = null;
 		}
 	}
 }
