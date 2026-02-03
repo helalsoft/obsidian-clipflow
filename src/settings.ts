@@ -111,6 +111,22 @@ export class ClipboardManagerSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Minimum character count")
+			.setDesc("Do not save clipboard entries shorter than this number of characters")
+			.addText((text) =>
+				text
+					.setPlaceholder("5")
+					.setValue(String(this.plugin.settings.minimumCharacterCount))
+					.onChange(async (value) => {
+						const num = parseInt(value, 10);
+						if (!isNaN(num) && num >= 0) {
+							this.plugin.settings.minimumCharacterCount = num;
+							await this.plugin.saveSettings();
+						}
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Auto-delete after paste")
 			.setDesc(
 				"Automatically remove an entry from history after pasting it via the quick switcher"

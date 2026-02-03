@@ -17,6 +17,7 @@ export interface ClipboardManagerSettings {
 
 	allowDuplicates: boolean;
 	ignoreWhitespaceOnly: boolean;
+	minimumCharacterCount: number;
 }
 
 export const DEFAULT_SETTINGS: ClipboardManagerSettings = {
@@ -29,4 +30,5 @@ export const DEFAULT_SETTINGS: ClipboardManagerSettings = {
 
 	allowDuplicates: false,
 	ignoreWhitespaceOnly: true,
+	minimumCharacterCount: 5,
 };

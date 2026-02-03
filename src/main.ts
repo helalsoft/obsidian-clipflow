@@ -181,6 +181,11 @@ export default class ClipboardManagerPlugin extends Plugin {
 			if (this.settings.ignoreWhitespaceOnly && !currentContent.trim()) {
 				return;
 			}
+
+			// Skip if content is shorter than minimum length
+			if (currentContent.length < this.settings.minimumCharacterCount) {
+				return;
+			}
 			
 			// Skip if content hasn't changed or is empty
 			if (!currentContent || currentContent === this.lastClipboardContent) {
@@ -224,6 +229,11 @@ export default class ClipboardManagerPlugin extends Plugin {
 
 			// Skip if content has only whitespace and setting is enabled
 			if (this.settings.ignoreWhitespaceOnly && !currentContent.trim()) {
+				return;
+			}
+
+			// Skip if content is shorter than minimum length
+			if (currentContent.length < this.settings.minimumCharacterCount) {
 				return;
 			}
 
