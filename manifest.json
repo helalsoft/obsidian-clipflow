@@ -1,7 +1,7 @@
 {
 	"id": "clipflow",
 	"name": "ClipFlow",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "1.0.0",
 	"description": "Seamlessly capture, search, and quick-paste from your clipboard history.",
 	"author": "Helalsoft",
